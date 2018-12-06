@@ -1,42 +1,89 @@
-# First we'll import the os module
-# This will allow us to create file paths across operating systems
 import os
-
-# Module for reading CSV files
 import csv
 
-#setup file with path
-csvpath="/Users/wheat/Documents/SMDA201811DATA2/03-HWSubmission/03-Python/PyBank/Resources/budget_data.csv"
+date, profit = ([] for i in range(2))
 
-#this waiting to be fixed
-df = pd.read_csv(csvpath)
-total = df['Profit/Losses'].sum()
-
-csvfile = open(csvpath, newline='')
-csvreader = csv.reader(csvfile)
-changeList = []
-for i, n in enumerate(csvreader):
-    changeList.append(int(n[1])
-change = 0
-for num in changeList:
-    change = num[1]-num[0]
+# input and output files
+input_file = "/Users/wheat/python3/PyBank/Resources/budget_data.csv"
+output_file = "/Users/wheat/python3/PyBank/Resources/budget_data_summary.txt"
 
 
-# Reading using CSV module
-
-with open(csvpath, newline='') as csvfile:
-
+with open(input_file, newline='') as budget_data:
+    
     # CSV reader specifies delimiter and variable that holds contents
-    csvreader = csv.reader(csvfile, delimiter=',')
-    
-    # Read the header row first (skip this step if there is no header)
-    csv_header = next(csvreader)
-    
-    #since each row is unique, it will be the Total Months Count
-    row_count = sum(1 for row in csvreader) 
+    reader = csv.reader(budget_data, delimiter=',')
 
-#Print the final report
-print ("Financial Analysis")
-print("--------------------------")
-print("Total Months:", row_count)
-print("Total:", '${}'.format(total))
+    # skip the header row
+    next(reader)
+
+    row_num = 0
+    for row in reader:
+        date.append(row[0])
+        profit.append(row[1])
+        row_num += 1
+
+
+# print summary header and dividing lines
+print("\nFinancial Analysis", "\n" + "-" * 30)
+
+# month count
+print("Total Months:", row_num)
+
+
+# calculate the total profit
+profit_sum = 0
+for i in profit:
+    profit_sum += int(i)
+
+print("Total: $" + str(profit_sum))
+
+
+# average change
+total_change = 0
+for c in range(row_num):
+    total_change += (int(profit[c-1]) - int(profit[c]))
+    
+# get the first number in the list and deducted from the total change
+first_number = (int(profit[0]) - int(profit[-1]))
+final_total_change = total_change - first_number
+
+avg_change = final_total_change / ((row_num)-1)
+
+
+print("Average Change: $" + str("{:.2f}".format(avg_change)))
+
+
+# greatest increase in profit
+max_increase = 0
+for m in range(len(profit)):
+    if int(profit[m]) - int(profit[m - 1]) > max_increase:
+        max_increase = int(profit[m]) - int(profit[m - 1])
+        max_increase_month = date[m]
+
+print("Greatest Increase in Profits:", max_increase_month, "($" + str(max_increase) + ")")
+
+
+# greatest decrease in profit
+max_decrease = 0
+for n in range(len(profit)):
+    if int(profit[n]) - int(profit[n - 1]) < max_decrease:
+        max_decrease = int(profit[n]) - int(profit[n - 1])
+        max_decrease_month = date[n]
+
+print("Greatest Decrease in Profits:", max_decrease_month, "($" + str(max_decrease) + ")")
+
+
+
+# Output data as a text file 
+with open(output_file, mode='w', newline='') as summary_txt:
+    writer = csv.writer(summary_txt)
+
+    writer.writerows([
+        ["Financial Analysis" ],
+        ["-" * 30],
+        ["Total Months: " + str(row_num)],
+        ["Total: $" + str(profit_sum)],
+        ["Average Change: $" + str("{:.2f}".format(avg_change))],
+        ["Greatest Increase in Profits: " + str(max_increase_month) + " ($" + str(max_increase) + ")"],
+        ["Greatest Decrease in Profits: " + str(max_decrease_month) + " ($" + str(max_decrease) + ")"]
+    ])
